@@ -94,12 +94,11 @@ def hello(data:str):
     if data.startswith("uploadsavedata.php"):
         d = request.args.to_dict()
         try:
-            if len(save[d["player"]].keys()) == song_num:
-                save[d["player"]] = {}
+            save[d["player"]].keys()
         except:
             save[d["player"]] = {}
         save[d["player"]][d["dataname"]]=d["data"]
-        if len(save[d["player"]].keys()) == song_num:
+        if len(save[d["player"]].keys()) == 89+song_num*24:
             with open("./save.json","w") as f:
                 f.write(json.dumps(save, sort_keys=True, indent=4))
         return "1"
@@ -115,4 +114,4 @@ def hello(data:str):
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host='0.0.0.0', port=80)
