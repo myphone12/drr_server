@@ -1,4 +1,4 @@
-from flask import Flask,request
+from flask import Flask,request, send_from_directory
 import datetime,json
 app = Flask(__name__)
 song_num = 132
@@ -9,7 +9,7 @@ def hello(data:str):
 
     global song_num,save
 
-    if data.startswith("usecard.php"): #input:cardid, return:number of coin
+    if data.startswith("usecard.php"): #input:card id, return:number of coin
         d = request.args.to_dict()
         try:
             id = int(d["cardid"])
@@ -21,7 +21,7 @@ def hello(data:str):
         ct = datetime.datetime.now()
         return f"{ct.year}{ct.month}{ct.day}"
     
-    if data.startswith("signup.php"): #input:password(uid),allscore,exp,nickname,onlineid,subtitle
+    if data.startswith("signup.php"): #input:password(uid),nickname
                                       #return:0(means OK)
         d = request.args.to_dict()
         try:
@@ -113,7 +113,13 @@ def hello(data:str):
         d = request.args.to_dict()
         return str(len(save[d["player"]]))
 
+    return None
+
+
+@app.route("/file/<data>")
+def sendfile(data:str):
+    return send_from_directory("./files",data, as_attachment=True)
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=80) #run server
+    app.run(host='0.0.0.0', port=12561) #run server
