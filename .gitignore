@@ -1,2 +1,23 @@
-__pycache__
-__pycache__/app.cpython-310.pyc
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 运行期数据（账号、云存档、成绩、兑换卡）
+# 这些是玩家数据，不应入库；服务器启动时会自动创建目录。
+data/
+original_gamecode/
+
+# 数据损坏时的自动备份
+*.json.broken
+
+# 编辑器 / IDE
+.idea/
+.vscode/
+*.swp
+
+# 旧格式数据文件：保留在仓库里作为迁移测试样本，
+# 如果不想让它们继续被跟踪，取消注释下面两行。
+# data.json
+# save.json

@@ -1,0 +1,11 @@
+# DanceRail Refresh 私有服务器 —— 运行依赖
+#
+# 安装：
+#     pip install -r requirements.txt
+#
+# 版本下限说明：
+#   * Flask 2.2 起支持本项目中用到的蓝图与 app.extensions 用法；
+#   * waitress 用于生产部署（多线程 WSGI）——
+#     客户端上传云存档时会在同一帧并发发出 96 个请求，必须多线程。
+Flask>=2.2
+waitress>=2.1

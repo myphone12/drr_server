@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DanceRail Refresh 服务器状态</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #14121c;
+      --panel: #1e1b29;
+      --accent: #ff6ba9;
+      --accent2: #6bd8ff;
+      --text: #ece9f5;
+      --muted: #9a94ad;
+      --ok: #7ee787;
+      --warn: #ffd45e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px 16px 64px;
+      background: radial-gradient(circle at 80% -10%, #23303f 0%, var(--bg) 60%);
+      color: var(--text);
+      font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+    }
+    .wrap { max-width: 1080px; margin: 0 auto; }
+    h1 { margin: 0 0 4px; font-size: 24px; }
+    h1 .accent { color: var(--accent); }
+    .meta { color: var(--muted); font-size: 13px; margin-bottom: 22px; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .stat {
+      background: var(--panel);
+      border: 1px solid #2e2941;
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+    .stat .k { color: var(--muted); font-size: 12px; }
+    .stat .v { font-size: 22px; font-variant-numeric: tabular-nums; margin-top: 4px; }
+    .stat .v.small { font-size: 13px; word-break: break-all; }
+    section { margin-bottom: 26px; }
+    h2 { font-size: 15px; color: var(--accent2); margin: 0 0 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #262236; }
+    th { color: var(--muted); font-weight: 500; }
+    td.num { font-variant-numeric: tabular-nums; }
+    code { background: #262236; padding: 1px 5px; border-radius: 4px; }
+    .badge { padding: 1px 7px; border-radius: 8px; font-size: 12px; }
+    .badge.on { background: #1f3d29; color: var(--ok); }
+    .badge.off { background: #3d2a1f; color: var(--warn); }
+    .badge.ban { background: #4a1f2e; color: #ff9bb5; }
+    footer { color: var(--muted); font-size: 12px; margin-top: 30px; }
+    a { color: var(--accent2); }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1><span class="accent">DanceRail</span> Refresh 服务器状态</h1>
+  <div class="meta">
+    当前日期（客户端算法）<span data-drr-clock>—</span>
+    · 数据目录 <code>{{ stats.data_dir }}</code>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="k">账号数</div><div class="v">{{ stats.accounts }}</div></div>
+    <div class="stat"><div class="k">封禁账号</div><div class="v">{{ stats.banned }}</div></div>
+    <div class="stat"><div class="k">云存档数（DLKEY）</div><div class="v">{{ stats.save_players }}</div></div>
+    <div class="stat"><div class="k">云存档条目总数</div><div class="v">{{ stats.save_entries }}</div></div>
+    <div class="stat"><div class="k">有成绩的玩家</div><div class="v">{{ stats.score_players }}</div></div>
+    <div class="stat"><div class="k">服务器曲目数</div><div class="v">{{ stats.song_count }}</div></div>
+    <div class="stat">
+      <div class="k">严格验签</div>
+      <div class="v small">
+        <span class="badge {{ 'on' if stats.strict_auth else 'off' }}">
+          {{ '开启' if stats.strict_auth else '关闭（宽松）' }}
+        </span>
+      </div>
+    </div>
+    <div class="stat">
+      <div class="k">兑换卡策略</div>
+      <div class="v small">
+        <code>{{ stats.card_mode }}</code>
+        {% if stats.cards_single_use %}· 单次有效{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <h2>账号列表（{{ stats.accounts }}）</h2>
+    {% if accounts %}
+    <table>
+      <thead>
+        <tr>
+          <th>ONLINE_ID</th><th>昵称</th><th>等级</th><th>经验</th>
+          <th>总分</th><th>Rating</th><th>称号</th><th>状态</th><th>更新时间</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for a in accounts %}
+        <tr>
+          <td class="num">{{ a.online_id }}</td>
+          <td>{{ a.nickname }}</td>
+          <td class="num">{{ a.level }}</td>
+          <td class="num">{{ a.exp }}</td>
+          <td class="num">{{ a.all_score }}</td>
+          <td class="num">{{ '%.2f'|format(a.rating) }}</td>
+          <td class="num">{{ a.subtitle }}</td>
+          <td>
+            {% if a.banned %}<span class="badge ban">已封禁</span>
+            {% else %}<span class="badge on">正常</span>{% endif %}
+          </td>
+          <td>{{ a.updated_at }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="meta">暂无账号。玩家首次进入游戏时客户端会自动调用 <code>signup.php</code> 注册。</p>
+    {% endif %}
+  </section>
+
+  <section>
+    <h2>云存档（按条目数排序，最多显示 50 条）</h2>
+    {% if save_players %}
+    <table>
+      <thead>
+        <tr><th>DLKEY（前 16 位）</th><th>条目数</th><th>关联 ONLINE_ID</th></tr>
+      </thead>
+      <tbody>
+      {% for s in save_players %}
+        <tr>
+          <td><code>{{ s.player[:16] }}…</code></td>
+          <td class="num">{{ s.entries }}</td>
+          <td class="num">{{ s.online_id or '—' }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="meta">暂无云存档。</p>
+    {% endif %}
+  </section>
+
+  <footer>
+    本页只读，不提供写操作。需要封禁玩家或登记兑换卡时，
+    直接编辑 <code>data/*.json</code>（格式见 <code>docs/ARCHITECTURE.md</code>）。
+    曲目排行榜页面：<code>/DanceRail/highscore.view.php?song_id=10138&amp;game_dif=2</code>
+  </footer>
+</div>
+<script src="/DanceRail/clock.js"></script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DanceRail Refresh — 曲目排行榜</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #14121c;
+      --panel: #1e1b29;
+      --accent: #ff6ba9;
+      --accent2: #6bd8ff;
+      --text: #ece9f5;
+      --muted: #9a94ad;
+      --gold: #ffd45e;
+      --silver: #cfd6e4;
+      --bronze: #d99a6c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px 16px 64px;
+      background: radial-gradient(circle at 20% -10%, #2a2340 0%, var(--bg) 60%);
+      color: var(--text);
+      font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+    }
+    .wrap { max-width: 1080px; margin: 0 auto; }
+    header { margin-bottom: 24px; }
+    h1 { margin: 0 0 6px; font-size: 26px; letter-spacing: 1px; }
+    h1 .accent { color: var(--accent); }
+    .meta { color: var(--muted); font-size: 14px; }
+    .boards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid #2e2941;
+      border-radius: 12px;
+      padding: 14px 16px 10px;
+    }
+    .card h2 {
+      margin: 0 0 10px;
+      font-size: 15px;
+      color: var(--accent2);
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .card h2 span { color: var(--muted); font-size: 12px; font-weight: 400; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    td { padding: 4px 2px; border-bottom: 1px solid #262236; }
+    tr:last-child td { border-bottom: none; }
+    td.rank { width: 34px; color: var(--muted); text-align: right; padding-right: 8px; }
+    td.score { text-align: right; font-variant-numeric: tabular-nums; }
+    td.name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px; }
+    tr.r1 td.rank, tr.r1 td.name { color: var(--gold); }
+    tr.r2 td.rank, tr.r2 td.name { color: var(--silver); }
+    tr.r3 td.rank, tr.r3 td.name { color: var(--bronze); }
+    .death {
+      display: inline-block;
+      margin-left: 6px;
+      font-size: 11px;
+      padding: 0 5px;
+      border-radius: 6px;
+      background: #4a1f2e;
+      color: #ff9bb5;
+    }
+    .empty { color: var(--muted); font-size: 13px; padding: 6px 0 12px; }
+    footer { margin-top: 28px; color: var(--muted); font-size: 12px; }
+    a { color: var(--accent2); }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><span class="accent">DanceRail</span> Refresh — 曲目排行榜</h1>
+    <div class="meta">
+      曲目编号 <strong>{{ song_id }}</strong>
+      （服务器已知 {{ song_count }} 首，编号自 {{ song_id_base }} 起）
+      · 难度 <strong>{{ difficulty_label }}</strong>
+      · 服务器时间 <span data-drr-clock>—</span>
+    </div>
+  </header>
+
+  <div class="boards">
+    {% for board in boards %}
+    <section class="card">
+      <h2>
+        谱面档位 {{ board.hard_level }}
+        <span>{{ board.entries | length }} 条记录</span>
+      </h2>
+      {% if board.entries %}
+      <table>
+        <tbody>
+        {% for row in board.entries %}
+          <tr class="r{{ row.rank }}">
+            <td class="rank">{{ row.rank }}</td>
+            <td class="name">
+              {{ row.name }}{% if row.death_mode %}<span class="death">DEATH</span>{% endif %}
+            </td>
+            <td class="score">{{ row.score }}%</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty">暂无成绩记录。玩家在结算界面上传成绩后就会出现在这里。</div>
+      {% endif %}
+    </section>
+    {% endfor %}
+  </div>
+
+  <footer>
+    数据来源：<code>scoreupload.php</code> 上传的谱面成绩（客户端只在非 Windows 且非自动演示时上传）。
+    成绩为百分比，满分 100%，暴击会带来 0.01 的额外加成，因此可能略高于 100%。
+    服务器状态见 <a href="/DanceRail/admin">/DanceRail/admin</a>。
+  </footer>
+</div>
+<script src="/DanceRail/clock.js"></script>
+</body>
+</html>
